@@ -2,10 +2,10 @@ import Link from "next/link";
 import React from "react";
 
 const accountLinks = [
-  { label: "Login", href: "/login" },
+  { label: "Login", href: "/" },
 ];
 const QuickLinks = [
-    { label: "My", href: "/" },
+    { label: "Marksheet", href: "/marksheets" },
 
 ];
 const Footer = () => {

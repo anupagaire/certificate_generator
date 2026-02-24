@@ -2,96 +2,84 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { User, Menu, X, LogOut } from "lucide-react";
+import { User, LogOut, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userFirstName, setUserFirstName] = useState("User");
+  const [userName, setUserName] = useState("User");
 
+  // Check login state on mount
   useEffect(() => {
-    const token = localStorage.getItem("user-token");
+    const token = localStorage.getItem("user-token"); // ✅ check localStorage
     const name = localStorage.getItem("user-name");
-    if (token) setIsLoggedIn(true);
-    if (name) setUserFirstName(name.split(" ")[0]);
+    setIsLoggedIn(!!token);
+    setUserName(name ? name.split(" ")[0] : "User");
   }, []);
 
-
-
   const handleLogout = () => {
-    // Remove the same keys that were used on login
-    localStorage.removeItem("user-token");
-    localStorage.removeItem("user-name");
+    localStorage.removeItem("user-token"); // ✅ remove token
+    localStorage.removeItem("user-name");  // ✅ remove name
     setIsLoggedIn(false);
-    router.push("/");
+    setUserName("User");
     setMenuOpen(false);
+    router.push("/");
   };
 
   return (
     <>
-      <nav className="md:hidden sticky top-0 z-50 h-16 bg-black flex items-center px-4">
-        <button onClick={() => setMenuOpen(true)} className="text-white">
-          <Menu size={28} />
-        </button>
-
-        <Link href="/" className="ml-3 flex items-center gap-2">
-          <span className="text-white text-lg font-bold">SHARING TOOL</span>
-        </Link>
-
-        <div className="ml-auto flex items-center gap-4">
-          {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1 text-white text-sm"
-            >
-              <User size={18} />
-              <span>{userFirstName}</span>
-            </button>
-          ) : (
-            <Link href="/login" className="text-white">
-              <User size={20} />
-            </Link>
-          )}
-        </div>
-      </nav>
-
-    
-
       {/* Desktop Navbar */}
-      <nav className="hidden md:flex sticky top-0 z-50 h-16 bg-black px-20 items-center">
-        <Link href="/" className="ml-3 flex items-center gap-2">
-          <span className="text-white text-lg font-bold">SHARING TOOL</span>
+      <nav className="hidden md:flex items-center justify-between bg-black px-8 py-4 sticky top-0 z-50">
+        <Link href="/" className="text-white text-lg font-bold">
+          DEMO
         </Link>
 
-        <div className="ml-auto flex items-center gap-6">
-
+        <div className="flex items-center gap-6">
           
 
           {isLoggedIn ? (
             <div className="flex items-center gap-3 text-white">
-              <span>Hi, {userFirstName}</span>
-              <button onClick={handleLogout}>
+              <span>Hi, {userName}</span>
+              <button
+                onClick={handleLogout}
+                className="hover:text-red-400 flex items-center gap-1"
+              >
                 <LogOut size={20} />
               </button>
             </div>
           ) : (
-            <Link className="text-white" href="/login">
+            <Link href="/" className="text-white">
               <User size={22} />
             </Link>
           )}
         </div>
       </nav>
 
-      {/* Mobile Side Menu */}
+      <nav className="md:hidden flex items-center justify-between bg-black px-4 py-4 sticky top-0 z-50">
+        <Link href="/" className="text-white text-lg font-bold">
+          DEMO
+        </Link>
+        <button
+          onClick={() => setMenuOpen(true)}
+          className="text-white"
+          aria-label="Open menu"
+        >
+          <Menu size={28} />
+        </button>
+      </nav>
+
       <div
-        className={`fixed inset-0 z-50 bg-black/40 ${menuOpen ? "block" : "hidden"}`}
+        className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 ${
+          menuOpen ? "opacity-100 block" : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => setMenuOpen(false)}
       >
         <div
-          className="w-72 h-full bg-black text-white p-4 overflow-y-auto"
+          className={`w-64 h-full bg-black text-white p-4 transform transition-transform duration-300 ${
+            menuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between mb-4">
@@ -101,15 +89,22 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="flex flex-col gap-4 text-lg">
-          
+          <div className="flex flex-col gap-4">
+           
 
             {isLoggedIn ? (
-              <button onClick={handleLogout} className="flex items-center gap-2">
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2"
+              >
                 <LogOut size={20} /> Logout
               </button>
             ) : (
-              <Link href="/login" className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+                onClick={() => setMenuOpen(false)}
+              >
                 <User size={20} /> Login
               </Link>
             )}
