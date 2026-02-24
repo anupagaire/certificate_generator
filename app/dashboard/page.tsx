@@ -85,71 +85,77 @@ export default function Dashboard() {
   const totals = calculateTotals();
 
   const handleSubmit = async () => {
-    if (!student.name.trim()) {
-      toast.error("Please enter student name");
-      return;
+  if (!student.name.trim()) {
+    toast.error("Please enter student name");
+    return;
+  }
+
+  if (subjects.some((s) => !s.subjectName.trim())) {
+    toast.error("All subjects must have a name");
+    return;
+  }
+
+  toast.loading("Generating & digitally signing PDF...");
+
+  try {
+    const res = await fetch("/api/form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ student, subjects }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Failed to generate signed PDF");
     }
 
-    if (subjects.some(s => !s.subjectName.trim())) {
-      toast.error("All subjects must have a name");
-      return;
-    }
+    // Get PDF file from response
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
 
-    toast.loading("Generating & saving marksheet...");
+    // Auto download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${student.name.replace(/\s+/g, "_")}_SIGNED.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-    try {
-      const res = await fetch("/api/form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student, subjects }),
-      });
+    window.URL.revokeObjectURL(url);
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || "Server error");
-      }
+    toast.dismiss();
+    toast.success("Signed PDF downloaded successfully!");
 
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+    // Reset form
+    setStudent({
+      name: "",
+      symbolNumber: "",
+      registrationNumber: "",
+      school: "",
+      grade: "",
+    });
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${student.name.trim()}_marksheet.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+    setSubjects([
+      {
+        subjectName: "",
+        theoryFull: 0,
+        theoryPass: 0,
+        theoryObtained: 0,
+        practicalFull: 0,
+        practicalPass: 0,
+        practicalObtained: 0,
+      },
+    ]);
 
-      toast.dismiss();
-      toast.success("Marksheet saved & downloaded!");
+  } catch (err: any) {
+    toast.dismiss();
+    toast.error(err.message || "Something went wrong");
+    console.error(err);
+  }
+};
 
-      // Reset form
-      setStudent({
-        name: "",
-        symbolNumber: "",
-        registrationNumber: "",
-        school: "",
-        grade: "",
-      });
-      setSubjects([
-        {
-          subjectName: "",
-          theoryFull: 0,
-          theoryPass: 0,
-          theoryObtained: 0,
-          practicalFull: 0,
-          practicalPass: 0,
-          practicalObtained: 0,
-        },
-      ]);
-
-      inputRefs.current.forEach((input) => input && (input.value = ""));
-    } catch (err: any) {
-      toast.dismiss();
-      toast.error(err.message || "Failed to generate PDF");
-      console.error(err);
-    }
-  };
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
