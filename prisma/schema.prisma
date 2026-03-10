@@ -23,3 +23,12 @@ model FormData {
 
   @@map("formdata")
 }
+
+
+model SignedForm {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentName    String
+  formattedText  String
+  signature      String
+  createdAt      DateTime @default(now())
+}

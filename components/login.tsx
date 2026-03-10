@@ -87,7 +87,7 @@ export default function Login() {
               bg-white dark:bg-gray-700
               border-gray-300 dark:border-gray-600
               text-gray-800 dark:text-white
-              focus:outline-none focus:ring-2 focus:ring-indigo-500
+              focus:outline-none focus:ring-2 focus:ring-blue-600
             "
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -101,7 +101,7 @@ export default function Login() {
               bg-white dark:bg-gray-700
               border-gray-300 dark:border-gray-600
               text-gray-800 dark:text-white
-              focus:outline-none focus:ring-2 focus:ring-indigo-500
+              focus:outline-none focus:ring-2 focus:ring-blue-600
             "
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -112,7 +112,7 @@ export default function Login() {
             onClick={handleLogin}
             className="
               w-full
-              bg-indigo-600 hover:bg-indigo-700
+              bg-blue-600 hover:bg-indigo-700
               text-white
               py-2
               rounded-lg

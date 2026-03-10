@@ -177,10 +177,10 @@ export default function Dashboard() {
       <Toaster position="top-center" />
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
         <Link
-              href="/marksheets"
-              className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-700 text-center text-white"
+              href="/pdf-upload"
+              className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 text-center text-white"
             >
-              View Saved Marksheets
+              PDF Upload & Sign
             </Link>
             </div>
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
@@ -197,7 +197,7 @@ export default function Dashboard() {
               </label>
               <input
                 placeholder={`Enter ${key}`}
-                className="w-full border border-gray-300 p-3 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 p-3 text-black rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                 value={(student as any)[key]}
                 onChange={(e) =>
                   setStudent({ ...student, [key]: e.target.value })
@@ -238,7 +238,6 @@ export default function Dashboard() {
   onKeyDown={(e) => handleKeyDown(e, index * 7 + fieldIndex)}
   onChange={(e) => handleSubjectChange(index, field as keyof Subject, e.target.value)}
 />
-
                       </td>
                     ))}
                     <td className="border p-2 font-medium text-center">{totalObt}</td>

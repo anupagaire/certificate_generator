@@ -4,33 +4,48 @@ import { jwtVerify } from "jose";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const token = req.cookies.get("token")?.value;
 
-  // Allow public routes
+  const publicRoutes = [
+    "/",
+    "/login",
+  ];
+
+  // Allow API & static
   if (
-    pathname.startsWith("/api") ||   // ✅ allow all API routes
-    pathname === "/" ||
-    pathname === "/login" ||
+    pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("token")?.value;
+  // If user has token
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(
+        process.env.JWT_SECRET!
+      );
 
-  if (!token) {
+      await jwtVerify(token, secret);
+
+      // 🔥 If logged in and trying to go to "/" → redirect to dashboard
+      if (pathname === "/") {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+
+      return NextResponse.next();
+    } catch (err) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+  }
+
+  // If no token and trying to access protected route
+  if (!publicRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || "dev-secret"
-    );
-    await jwtVerify(token, secret);
-    return NextResponse.next();
-  } catch (err) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
+  return NextResponse.next();
 }
 
 export const config = {

@@ -5,7 +5,7 @@ const accountLinks = [
   { label: "Login", href: "/" },
 ];
 const QuickLinks = [
-    { label: "Marksheet", href: "/marksheets" },
+    { label: "Marksheet", href: "/pdf-upload" },
 
 ];
 const Footer = () => {

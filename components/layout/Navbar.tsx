@@ -20,8 +20,8 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user-token"); // ✅ remove token
-    localStorage.removeItem("user-name");  // ✅ remove name
+    localStorage.removeItem("user-token"); 
+    localStorage.removeItem("user-name"); 
     setIsLoggedIn(false);
     setUserName("User");
     setMenuOpen(false);
@@ -32,16 +32,33 @@ const Navbar = () => {
     <>
       {/* Desktop Navbar */}
       <nav className="hidden md:flex items-center justify-between bg-black px-8 py-4 sticky top-0 z-50">
-        <Link href="/" className="text-white text-lg font-bold">
+        <Link href="/dashboard" className="text-white text-lg font-bold">
           DEMO
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 ">
+           <Link href="/form-sign" className="text-white  text-lg font-bold"
+           >
+          Form Data Sign
+        </Link>|
+        {/* <Link href="/list_signed_forms" className="text-white text-lg font-bold">
+          List Data Sign
+        </Link>| */}
+           <Link href="/verify-page" className="text-white text-lg font-bold">
+          Pdf Verify
+        </Link>|<Link href="/verifytextsignature" className="text-white text-lg font-bold">
+          Sign Verify
+        </Link>|
+        <Link href="/" className="text-white text-lg font-bold">
+          PDF Sign
+        </Link>|
+         <Link href="/pdf-upload" className="text-white text-lg font-bold">
+          PDF Upload & Sign
+        </Link>
           
 
           {isLoggedIn ? (
             <div className="flex items-center gap-3 text-white">
-              <span>Hi, {userName}</span>
               <button
                 onClick={handleLogout}
                 className="hover:text-red-400 flex items-center gap-1"

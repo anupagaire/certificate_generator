@@ -1,4 +1,3 @@
-// app/api/sign-marksheet/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import fs from "fs";
@@ -18,9 +17,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // =========================
-    // 1️⃣ CREATE PDF
-    // =========================
+    // CREATE PDF
 
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
@@ -69,9 +66,7 @@ export async function POST(req: NextRequest) {
 
     y -= 40;
 
-    // =========================
-    // 2️⃣ TABLE DESIGN
-    // =========================
+    // TABLE DESIGN
 
     const colWidths = [140, 48, 48, 48, 48, 52, 52, 62];
     const tableLeft = 45;
@@ -138,9 +133,7 @@ export async function POST(req: NextRequest) {
       y -= 20;
     });
 
-    // =========================
-    // 3️⃣ GRAND TOTAL SECTION
-    // =========================
+    // GRAND TOTAL SECTION
 
     y -= 30;
 
@@ -155,9 +148,7 @@ export async function POST(req: NextRequest) {
 
     page.drawText(`Result: ${result}`, { x: 60, y, size: 12, font: bold, color: result === "PASS" ? rgb(0, 0.6, 0) : rgb(0.9, 0, 0) });
 
-    // =========================
-    // 4️⃣ SIGNATURE LINES
-    // =========================
+    //  SIGNATURE LINES
 
     y -= 80;
 
@@ -171,9 +162,7 @@ export async function POST(req: NextRequest) {
     const pdfBytes = await pdfDoc.save();
     const pdfBuffer = Buffer.from(pdfBytes);
 
-    // =========================
-    // 5️⃣ RCVAULT SIGNING
-    // =========================
+    //  RCVAULT SIGNING
 
     const sessionRes = await fetch(`${RCVAULT_BASE}/signing-challenge/`, {
       method: "POST",
