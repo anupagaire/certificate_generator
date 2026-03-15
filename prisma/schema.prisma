@@ -13,17 +13,6 @@ model User {
   password String
 }
 
-model FormData {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  studentJson  Json     // { name, symbolNumber, registrationNumber, school, grade }
-  subjectsJson Json     // array of subjects [{subjectName, theoryFull, ...}]
-
-  @@map("formdata")
-}
-
 
 model SignedForm {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -31,4 +20,14 @@ model SignedForm {
   formattedText  String
   signature      String
   createdAt      DateTime @default(now())
+}
+
+
+model SignedPdf {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  fileName     String
+  studentName  String
+  studentData  String
+  subjectsData String
+  createdAt    DateTime @default(now())
 }

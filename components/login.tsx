@@ -112,7 +112,7 @@ export default function Login() {
             onClick={handleLogin}
             className="
               w-full
-              bg-blue-600 hover:bg-indigo-700
+              bg-indigo-600 hover:bg-indigo-700
               text-white
               py-2
               rounded-lg

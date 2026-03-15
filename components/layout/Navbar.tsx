@@ -49,7 +49,7 @@ const Navbar = () => {
         </Link>|<Link href="/verifytextsignature" className="text-white text-lg font-bold">
           Sign Verify
         </Link>|
-        <Link href="/" className="text-white text-lg font-bold">
+        <Link href="/pdf-sign" className="text-white text-lg font-bold">
           PDF Sign
         </Link>|
          <Link href="/pdf-upload" className="text-white text-lg font-bold">

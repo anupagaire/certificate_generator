@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import fs from "fs";
 import path from "path";
+import { prisma } from "@/lib/prisma";
+
 
 const RCVAULT_BASE = "http://202.51.70.18/api/v1";
 const TOKEN = process.env.RCVAULT_TOKEN!;
@@ -230,6 +232,16 @@ export async function POST(req: NextRequest) {
     const base64Pdf = signData.results[0].signature;
     const signedPdfBuffer = Buffer.from(base64Pdf, "base64");
 
+    await prisma.signedPdf.create({
+      data: {
+        fileName: `${student.name}_SIGNED.pdf`,
+        studentName: student.name,
+        studentData: JSON.stringify(student),
+        subjectsData: JSON.stringify(subjects),
+      },
+    });
+
+
     return new NextResponse(signedPdfBuffer, {
       status: 200,
       headers: {
@@ -237,6 +249,8 @@ export async function POST(req: NextRequest) {
         "Content-Disposition": `attachment; filename="${student.name.replace(/\s+/g, "_")}_SIGNED.pdf"`,
       },
     });
+
+    
 
   } catch (err: any) {
     console.error("ERROR:", err);
