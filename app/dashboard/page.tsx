@@ -15,22 +15,18 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen p-8 bg-gray-50">
-      <h1 className="text-4xl md:text-5xl text-center mb-12 font-bold text-gray-800 cinzel">
-        Dashboard
+      <h1 className="text-4xl md:text-5xl text-center mb-12 font-bold text-gray-800 cinzel">Dashboard
       </h1>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {cards.map((card) => (
           <Link
             key={card.title}
             href={card.href}
-            className="flex flex-col items-center justify-center gap-4 border  text-gray-800 bg-white rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 p-8 text-center"
-          >
-            <div className="text-amber-500">{card.icon}</div>
-            <span className="text-xl md:text-2xl font-semibold">{card.title}</span>
-          </Link>
-        ))}
-      </div>
+       className="flex flex-col items-center justify-center gap-4 border  text-gray-800 bg-white rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 p-8 text-center">      
+             <div className="text-amber-500">{card.icon}</div>
+          <span className="text-xl md:text-2xl font-semibold">{card.title}</span>
+   </Link>
+        ))}      </div>
     </main>
   );
 }

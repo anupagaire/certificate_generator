@@ -48,11 +48,9 @@ export default function SignedFormsPage() {
               <p className="break-all text-black">{form.formattedText}</p>
             </div>
 
-            <div>
-              <p className="font-semibold flex items-center justify-between text-black">
-                Signature
-                <button className="ml-2 bg-purple-500 text-white px-3 py-1 rounded" onClick={() => copyToClipboard(form.signature)}>Copy</button>
-              </p>
+ <div>
+   <p className="font-semibold flex items-center justify-between text-black">Signature
+<button className="ml-2 bg-purple-500 text-white px-3 py-1 rounded" onClick={() => copyToClipboard(form.signature)}>Copy</button>  </p>
               <p className="break-all text-blue-700">{form.signature}</p>
             </div>
           </div>

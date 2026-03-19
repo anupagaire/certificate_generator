@@ -129,6 +129,49 @@ export default function FormSignPage() {
     }
   };
 
+const [signProvider, setSignProvider] = useState<"rcvault" | "dsigner" | null>(null);
+
+if (!signProvider) {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-lg bg-white rounded-2xl shadow-xl p-10 text-center space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">
+            Choose Signing Provider
+          </h2>
+          <p className="text-gray-500 mt-2 mb-4">
+            Select the service you want to use to sign the document.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-5">
+          <button
+            onClick={() => setSignProvider("rcvault")}
+            className="group border rounded-xl p-6 mb-2"
+          >
+            <p className="font-semibold text-gray-700 group-hover:text-blue-600">
+              RC Vault
+            </p>
+            <p className="text-sm text-gray-500">
+              Sign using RC Vault
+            </p>
+          </button>
+
+          <button
+            disabled
+            className="border rounded-xl p-6 bg-gray-50 text-gray-400 cursor-not-allowed"
+          >
+            <p className="font-semibold">DSigner</p>
+            <p className="text-sm">Coming soon</p>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
   const verifySignature = async () => {
     if (!signatureResult) return;
 
@@ -151,9 +194,9 @@ export default function FormSignPage() {
       toast.dismiss();
 
      if (data.result?.[1] === true) {
-  toast.success("Signature verified ✅");
+  toast.success("Signature verified ");
 } else {
-  toast.error("Signature invalid ❌");
+  toast.error("Signature invalid ");
 }
 
     } catch (err: any) {
@@ -171,15 +214,8 @@ export default function FormSignPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <Toaster position="top-center" />
-
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
-          Form Signing
-        </h1>
-
-        {/* STUDENT INFO */}
-
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Form Signing</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
           {Object.keys(student).map((key) => (
             <div key={key}>
@@ -263,8 +299,7 @@ export default function FormSignPage() {
         <button
           onClick={addSubject}
           className="mb-6 bg-blue-600 text-white px-5 py-2 rounded-lg"
-        >
-          + Add Subject
+        > + Add Subject
         </button>
 
         <div className="mb-8 text-lg font-semibold text-gray-800">
@@ -275,65 +310,35 @@ export default function FormSignPage() {
         <button
           onClick={handleSubmit}
           className="mb-6 bg-green-600 text-white px-5 py-2 rounded-lg"
-        >
-          Sign Form Data
+        >Sign Form Data
         </button>
 
         {/* SIGNATURE RESULT */}
-
         {signatureResult && (
-
           <div className="mt-8 bg-gray-100 p-5 rounded-lg space-y-4">
-
             <div>
               <p className="font-semibold text-black flex justify-between">
                 Formatted Text
-
-                <button
-                  className="ml-2 bg-blue-600 text-white px-3 py-1 text-sm rounded"
-                  onClick={() => copyToClipboard(signatureResult.formattedText)}
-                >
-                  Copy
-                </button>
-
+                <button className="ml-2 bg-blue-600 text-white px-3 py-1 text-sm rounded"
+                  onClick={() => copyToClipboard(signatureResult.formattedText)}>Copy</button>
               </p>
-
               <p className="break-all text-black">
-                {signatureResult.formattedText}
-              </p>
-
+  {signatureResult.formattedText.slice(0, 100)}...
+</p>
             </div>
 
             <div>
-              <p className="font-semibold text-black flex justify-between">
-                Signature
-
-                <button
-                  className="ml-2 bg-green-600 text-white px-3 py-1 text-sm rounded"
-                  onClick={() => copyToClipboard(signatureResult.signature)}
-                >
-                  Copy
-                </button>
-
+              <p className="font-semibold text-black flex justify-between">Signature
+                <button  className="ml-2 bg-green-600 text-white px-3 py-1 text-sm rounded"
+                  onClick={() => copyToClipboard(signatureResult.signature.slice)}>Copy</button>
               </p>
-
-              <p className="break-all text-blue-700">
-                {signatureResult.signature}
-              </p>
-
+              <p className="break-all text-blue-700">{signatureResult.signature.slice(0,100)}...</p>
             </div>
-
-            <button
-              onClick={verifySignature}
-              className="bg-purple-600 text-white px-5 py-2 rounded-lg"
-            >
-              Verify Signature
-            </button>
-
+            <button onClick={verifySignature}
+              className="bg-purple-600 text-white px-5 py-2 rounded-lg">Verify Signature</button>
           </div>
         )}
-
-      </div>
+        </div>
     </div>
   );
 }

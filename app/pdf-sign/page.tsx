@@ -70,6 +70,49 @@ export default function Dashboard() {
 };
 
 
+const [signProvider, setSignProvider] = useState<"rcvault" | "dsigner" | null>(null);
+
+if (!signProvider) {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-xl p-10 text-center space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">
+            Choose Signing Provider
+          </h2>
+          <p className="text-gray-500 mt-2 mb-4">
+            Select the service you want to use to sign the document.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-5">
+          <button
+            onClick={() => setSignProvider("rcvault")}
+            className="group border rounded-xl p-6 mb-2"
+          >
+            <p className="font-semibold text-gray-700 group-hover:text-blue-600">
+              RC Vault
+            </p>
+            <p className="text-sm text-gray-500">
+              Sign using RC Vault
+            </p>
+          </button>
+
+          <button
+            disabled
+            className="border rounded-xl p-6 bg-gray-50 text-gray-400 cursor-not-allowed"
+          >
+            <p className="font-semibold">DSigner</p>
+            <p className="text-sm">Coming soon</p>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
   const calculateTotals = () => {
     let totalFull = 0;
     let totalObtained = 0;

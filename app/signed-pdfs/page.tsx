@@ -31,7 +31,7 @@ export default function SignedPdfsPage() {
             <th className="border p-2">Student</th>
             <th className="border p-2">File</th>
             <th className="border p-2">Created</th>
-            <th className="border p-2">Details</th>
+          <th className="border p-2">Details</th>
             <th className="border p-2">Verify</th>
           </tr>
         </thead>
@@ -40,13 +40,10 @@ export default function SignedPdfsPage() {
           {pdfs.map((pdf) => {
             const student = JSON.parse(pdf.studentData);
             const subjects = JSON.parse(pdf.subjectsData);
-
             return (
               <tr key={pdf.id}>
                 <td className="border p-2">{pdf.studentName}</td>
-
                 <td className="border p-2">{pdf.fileName}</td>
-
                 <td className="border p-2">
                   {new Date(pdf.createdAt).toLocaleString()}
                 </td>
@@ -57,7 +54,6 @@ export default function SignedPdfsPage() {
                       View Data
                     </summary>
 
-                    {/* Student Info */}
                     <div className="mt-2 bg-gray-50 p-3 rounded">
                       <p><strong>Name:</strong> {student.name}</p>
                       <p><strong>Symbol:</strong> {student.symbolNumber}</p>

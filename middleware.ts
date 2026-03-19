@@ -29,7 +29,6 @@ export async function middleware(req: NextRequest) {
 
       await jwtVerify(token, secret);
 
-      // 🔥 If logged in and trying to go to "/" → redirect to dashboard
       if (pathname === "/") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }

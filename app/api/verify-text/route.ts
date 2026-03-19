@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
     const verifyData = await verifyRes.json();
 
     return NextResponse.json(verifyData);
-
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message },

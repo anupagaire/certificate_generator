@@ -41,9 +41,9 @@ const Navbar = () => {
            >
           Form Data Sign
         </Link>|
-        {/* <Link href="/list_signed_forms" className="text-white text-lg font-bold">
-          List Data Sign
-        </Link>| */}
+        <Link href="/signed-pdfs" className="text-white text-lg font-bold">
+           Signed PDF List
+        </Link>|
            <Link href="/verify-page" className="text-white text-lg font-bold">
           Pdf Verify
         </Link>|<Link href="/verifytextsignature" className="text-white text-lg font-bold">
