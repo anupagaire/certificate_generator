@@ -40,7 +40,6 @@ function signPdfWithDsigner(base64Pdf: string): Promise<Uint8Array> {
         try {
           parsed = JSON.parse(text);
         } catch {
-          // not JSON, ignore
         }
 
         // First message: connection confirmation — send our request
@@ -177,7 +176,7 @@ export default function Dashboard() {
 
   const totals = calculateTotals();
 
-  // ── RC Vault flow (existing) ─────────────────────────────────────────────
+  // ── RC Vault flow 
   const handleRcVaultSubmit = async () => {
     if (!student.name.trim()) {
       toast.error("Please enter student name");
@@ -222,7 +221,7 @@ export default function Dashboard() {
     }
   };
 
-  // ── DSigner flow ─────────────────────────────────────────────────────────
+  // ── DSigner flow 
   const handleDsignerSubmit = async () => {
     if (!student.name.trim()) {
       toast.error("Please enter student name");
@@ -267,8 +266,9 @@ export default function Dashboard() {
       // Step 3: Send to DSigner via WebSocket
       const signedBytes = await signPdfWithDsigner(base64Pdf);
 
-      // Step 4: Download signed PDF
-      const signedBlob = new Blob([signedBytes], { type: "application/pdf" });
+const signedBlob = new Blob([new Uint8Array(signedBytes)], {
+  type: "application/pdf",
+});
       const url = window.URL.createObjectURL(signedBlob);
       const a = document.createElement("a");
       a.href = url;
@@ -363,7 +363,7 @@ export default function Dashboard() {
               <p className="font-semibold text-gray-700 group-hover:text-green-600">
                 DSigner
               </p>
-              <p className="text-sm text-gray-500">Sign using DSigner (local)</p>
+              <p className="text-sm text-gray-500">Sign using DSigner </p>
             </button>
           </div>
         </div>

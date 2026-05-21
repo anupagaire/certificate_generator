@@ -20,11 +20,11 @@ export default function SideBar() {
 
   return (
     <>
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-stone-100 border-b shadow-sm sticky top-0 z-50">
+{/* <div className="md:hidden flex items-center justify-between px-4 py-3 bg-stone-100 border-b shadow-sm sticky top-0 z-50 w-full">
         <h2 className="text-lg font-bold text-gray-800">
           Dashboard
-        </h2>
-
+        </h2> */}
+{/* 
         <button
           onClick={() => setOpen(!open)}
           className="p-2 rounded-lg hover:bg-stone-200"
@@ -34,8 +34,8 @@ export default function SideBar() {
           ) : (
             <Menu className="w-6 h-6 text-gray-800" />
           )}
-        </button>
-      </div>
+        </button> */}
+      {/* </div> */}
 
       {/* OVERLAY */}
       {open && (

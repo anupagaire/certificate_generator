@@ -19,6 +19,7 @@ model SignedForm {
   studentName    String
   formattedText  String
   signature      String
+  provider      String   @default("rcvault") 
   createdAt      DateTime @default(now())
 }
 

@@ -3,18 +3,17 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    const { student, subjects, formattedText, signature } = await req.json();
+    const { student, subjects, formattedText, signature, provider } = await req.json();
 
-    // Save to MongoDB
     await prisma.signedForm.create({
       data: {
         studentName: student.name,
         formattedText,
         signature,
+        provider: provider ?? "rcvault", // default to rcvault for backward compat
       },
     });
 
-    // Return updated list of all forms
     const allForms = await prisma.signedForm.findMany({
       orderBy: { createdAt: "desc" },
     });

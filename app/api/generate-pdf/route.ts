@@ -157,15 +157,15 @@ export async function POST(req: NextRequest) {
     page.drawText("Controller of Examinations", { x: 360, y: y - 15, size: 10, font: helvetica });
 
     // Return raw unsigned PDF
-    const pdfBytes = await pdfDoc.save();
+const pdfBytes = await pdfDoc.save();
 
-    return new NextResponse(pdfBytes, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${student.name.replace(/\s+/g, "_")}_marksheet.pdf"`,
-      },
-    });
+return new NextResponse(pdfBytes.buffer as ArrayBuffer, {
+  status: 200,
+  headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${student.name.replace(/\s+/g, "_")}_marksheet.pdf"`,
+  },
+});
 
   } catch (err: any) {
     console.error("ERROR:", err);
