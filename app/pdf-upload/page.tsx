@@ -91,7 +91,6 @@ function signPdfWithDsigner(base64Pdf: string): Promise<Uint8Array> {
   });
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function UploadSignPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [signProvider, setSignProvider] = useState<"rcvault" | "dsigner" | null>(null);
