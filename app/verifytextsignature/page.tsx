@@ -9,112 +9,8 @@ type SignedForm = {
   formattedText: string;
   signature: string;
   createdAt: string;
-  provider?: "rcvault" | "dsigner"; 
 };
 
-// ── DSigner WebSocket verifyForm 
-function verifyFormWithDsigner(
-  formData: string,
-  signature: string
-): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocket("wss://127.0.0.1:8080");
-    let connected = false;
-
-    const timeout = setTimeout(() => {
-      ws.close();
-      reject(new Error("DSigner timed out. Is the DSigner app running?"));
-    }, 30000);
-
-    ws.onopen = () => {
-      console.log("DSigner WS opened for verifyForm...");
-    };
-
-    ws.onmessage = (event) => {
-      if (typeof event.data !== "string") return;
-
-      const text = event.data.trim();
-      console.log("DSigner verifyForm message:", text.substring(0, 300));
-
-      let parsed: { status?: string; message?: string; result?: boolean } = {};
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-       
-      }
-
-      // First message: connection confirmed → send verifyForm request
-      if (!connected && parsed.status === "connected") {
-        connected = true;
-        console.log("DSigner ready, sending verifyForm...");
-
-        const message =
-          "action=verifyForm\n" +
-          `input={3,"${formData}"}\n` +
-          `signed_text={0,"${signature}"}`;
-
-        ws.send(message);
-        return;
-      }
-
-      if (parsed.status === "error" || parsed.status === "failed") {
-        clearTimeout(timeout);
-        ws.close();
-        reject(new Error(`DSigner error: ${parsed.message || text}`));
-        return;
-      }
-
-      if (parsed.status === "success") {
-  clearTimeout(timeout);
-  ws.close();
-
-  let isValid = false;
-
-  // DSigner returns message as an array: [{ email, signature_ok, hash_ok, cert_ok }]
-  if (Array.isArray(parsed.message) && parsed.message.length > 0) {
-    const result = parsed.message[0];
-    isValid =
-      result.signature_ok === true &&
-      result.hash_ok === true &&
-      result.cert_ok === true;
-  } else {
-    // Fallback for plain string/boolean responses
-    isValid =
-      parsed.result === true ||
-      parsed.message === "true" ||
-      parsed.message === "valid";
-  }
-
-  resolve(isValid);
-  return;
-}
-
-      // Some DSigner versions return result directly
-      if (parsed.result !== undefined) {
-        clearTimeout(timeout);
-        ws.close();
-        resolve(parsed.result === true);
-        return;
-      }
-    };
-
-    ws.onerror = (e) => {
-      clearTimeout(timeout);
-      console.error("DSigner WS error:", e);
-      reject(
-        new Error(
-          "Cannot connect to DSigner. Make sure the DSigner app is running."
-        )
-      );
-    };
-
-    ws.onclose = (event) => {
-      console.log("DSigner WS closed:", event.code, event.reason);
-    };
-  });
-}
-
-// ── Parse pipe-separated key=value string ───────────────────────────────────
 const parseFormattedText = (text: string) => {
   const cleaned = text.replace(/^{|}$/g, "");
   return cleaned.split("|").map((pair) => {
@@ -134,13 +30,8 @@ const buildFormattedText = (rows: { key: string; value: string }[]) => {
 export default function SignedFormsPage() {
   const [forms, setForms] = useState<SignedForm[]>([]);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
-  const [verificationResults, setVerificationResults] = useState<
-    Record<string, boolean>
-  >({});
+  const [verificationResults, setVerificationResults] = useState<Record<string, boolean>>({});
   const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
-
-  // Filter state
-  const [filter, setFilter] = useState<"all" | "rcvault" | "dsigner">("all");
 
   useEffect(() => {
     fetch("/api/list-signed-forms")
@@ -149,241 +40,188 @@ export default function SignedFormsPage() {
       .catch(() => toast.error("Failed to fetch saved forms"));
   }, []);
 
-  // ── RC Vault verification ──────────────────────────────────────────────────
-  const verifyWithRcVault = async (form: SignedForm) => {
-    const textToVerify = editedTexts[form.id] ?? form.formattedText;
-
-    const res = await fetch("/api/verify-text", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: textToVerify,
-        signed_text: form.signature,
-      }),
-    });
-
-    const data = await res.json();
-    return data.result?.[1] === true;
-  };
-
-  // ── DSigner verification ───────────────────────────────────────────────────
-  const verifyWithDsigner = async (form: SignedForm) => {
-    const textToVerify = editedTexts[form.id] ?? form.formattedText;
-    // Strip outer braces if present — DSigner wants raw key=value|... string
-    const rawData = textToVerify.replace(/^{|}$/g, "");
-    return verifyFormWithDsigner(rawData, form.signature);
-  };
-
-  // ── Main verify handler ────────────────────────────────────────────────────
   const verifyForm = async (formId: string) => {
     setVerifyingId(formId);
+    const toastId = toast.loading("Verifying with RC Vault...");
 
     try {
       const form = forms.find((f) => f.id === formId);
       if (!form) {
-        toast.error("Form not found");
+        toast.error("Form not found", { id: toastId });
         return;
       }
 
-      let isValid: boolean;
+      const textToVerify = editedTexts[form.id] ?? form.formattedText;
 
-      if (form.provider === "dsigner") {
-        toast.loading("Sending to DSigner for verification...");
-        isValid = await verifyWithDsigner(form);
-      } else {
-        toast.loading("Verifying with RC Vault...");
-        isValid = await verifyWithRcVault(form);
-      }
+      const res = await fetch("/api/verify-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: textToVerify,
+          signed_text: form.signature,
+        }),
+      });
 
-      toast.dismiss();
+      const data = await res.json();
+      const isValid = data.result?.[1] === true;
+
       setVerificationResults((prev) => ({ ...prev, [formId]: isValid }));
-      toast.success(`Verification ${isValid ? "passed ✓" : "failed ✗"}`);
+      toast.success(`Verification ${isValid ? "passed ✓" : "failed ✗"}`, { id: toastId });
     } catch (err: any) {
-      toast.dismiss();
-      toast.error(err.message || "Verification failed");
+      toast.error(err.message || "Verification failed", { id: toastId });
     } finally {
       setVerifyingId(null);
     }
   };
 
-  // ── Filtered forms ─────────────────────────────────────────────────────────
-  const filteredForms = forms.filter((f) => {
-    if (filter === "all") return true;
-    // Forms without a provider field are assumed RC Vault (legacy)
-    const provider = f.provider ?? "rcvault";
-    return provider === filter;
-  });
-
-  const rcVaultCount = forms.filter(
-    (f) => (f.provider ?? "rcvault") === "rcvault"
-  ).length;
-  const dsignerCount = forms.filter((f) => f.provider === "dsigner").length;
-
   return (
     <div className="min-h-screen bg-gray-50 text-gray-950 p-6">
       <Toaster position="top-center" />
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-2">
-          Saved Signed Forms
-        </h1>
-        <p className="text-center text-gray-500 mb-6">
-          Edit text if needed, then click Verify to check signature validity.
-        </p>
 
-        <div className="flex justify-center gap-3 mb-8">
-          {(
-            [
-              { key: "all", label: `All (${forms.length})` },
-              { key: "rcvault", label: `RC Vault (${rcVaultCount})` },
-              { key: "dsigner", label: `DSigner (${dsignerCount})` },
-            ] as const
-          ).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all ${
-                filter === key
-                  ? key === "dsigner"
-                    ? "bg-green-600 text-white border-green-600"
-                    : key === "rcvault"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-gray-800 text-white border-gray-800"
-                  : "bg-white text-gray-600 border-gray-300 hover:border-gray-500"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Saved Signed Forms</h1>
+          <p className="text-gray-500 text-sm">
+            Edit any field if needed, then click <span className="font-semibold text-blue-600">Verify</span> to check signature validity via RC Vault.
+          </p>
         </div>
 
-        {filteredForms.length === 0 && (
-          <p className="text-center text-gray-400">No forms found.</p>
+        {/* Count badge */}
+        <div className="flex justify-center mb-8">
+          <span className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l2 2h3a2 2 0 012 2v12a2 2 0 01-2 2z" />
+            </svg>
+            {forms.length} {forms.length === 1 ? "Form" : "Forms"} 
+          </span>
+        </div>
+
+        {forms.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-lg">No signed forms found.</p>
+          </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredForms.map((form) => {
-            const provider = form.provider ?? "rcvault";
-            const isDsigner = provider === "dsigner";
-
-            return (
-              <div
-                key={form.id}
-                className="bg-white shadow-lg rounded-2xl p-6 space-y-4 border border-gray-200"
-              >
-                {/* Provider badge */}
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-gray-800">
-                    {form.studentName}
+          {forms.map((form) => (
+            <div
+              key={form.id}
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col"
+            >
+              {/* Card header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 flex items-center justify-between">
+                <div>
+                  <p className="text-white font-semibold text-base leading-tight">{form.studentName}</p>
+                  <p className="text-blue-100 text-xs mt-0.5">
+                    {new Date(form.createdAt).toLocaleString()}
                   </p>
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      isDsigner
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {isDsigner ? "DSigner" : "RC Vault"}
-                  </span>
                 </div>
+              
+              </div>
 
-                <p className="text-sm text-gray-400">
-                  Signed at: {new Date(form.createdAt).toLocaleString()}
-                </p>
-
-                <details className="group border-t border-gray-200 pt-2">
-                  <summary className="cursor-pointer font-semibold text-gray-800 group-open:text-indigo-600">
-                    View Form Details ▼
+              {/* Card body */}
+              <div className="p-5 flex flex-col gap-4 flex-1">
+                <details className="group">
+                  <summary className="cursor-pointer select-none flex items-center justify-between text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors">
+                    <span>Form Details</span>
+                    <svg
+                      className="w-4 h-4 transition-transform group-open:rotate-180"
+                      fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </summary>
-                  <div className="mt-2 space-y-3">
-                    <div>
-                      <p className="font-semibold mb-1">Form Data</p>
-                      <table className="w-full text-sm border rounded-lg">
-                        <thead>
-                          <tr>
-                            <th className="border px-3 py-2 text-left">
-                              Field
-                            </th>
-                            <th className="border px-3 py-2 text-left">
-                              Value
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {parseFormattedText(
-                            editedTexts[form.id] ?? form.formattedText
-                          ).map((item, i, arr) => (
-                            <tr key={i}>
-                              <td className="border px-3 py-2 font-medium">
-                                {item.key}
-                              </td>
-                              <td className="border px-3 py-2">
-                                <input
-                                  className="w-full border rounded px-2 py-1"
-                                  value={item.value}
-                                  onChange={(e) => {
-                                    const updated = [...arr];
-                                    updated[i] = {
-                                      ...updated[i],
-                                      value: e.target.value,
-                                    };
-                                    setEditedTexts((prev) => ({
-                                      ...prev,
-                                      [form.id]: buildFormattedText(updated),
-                                    }));
-                                  }}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
 
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-gray-500">
-                        Signature Provider:{" "}
-                        <span
-                          className={
-                            isDsigner ? "text-green-600" : "text-blue-600"
-                          }
-                        >
-                          {isDsigner ? "DSigner" : "RC Vault"}
-                        </span>
-                      </p>
-                    </div>
+                  <div className="mt-3 rounded-xl border border-gray-100 overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                          <th className="px-3 py-2 text-left font-medium w-2/5">Field</th>
+                          <th className="px-3 py-2 text-left font-medium">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parseFormattedText(editedTexts[form.id] ?? form.formattedText).map((item, i, arr) => (
+                          <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                            <td className="px-3 py-2 font-medium text-gray-600 align-middle">{item.key}</td>
+                            <td className="px-3 py-2">
+                              <input
+                                className="w-full border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                                value={item.value}
+                                onChange={(e) => {
+                                  const updated = [...arr];
+                                  updated[i] = { ...updated[i], value: e.target.value };
+                                  setEditedTexts((prev) => ({
+                                    ...prev,
+                                    [form.id]: buildFormattedText(updated),
+                                  }));
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </details>
+
+                {/* Spacer */}
+                <div className="flex-1" />
 
                 {/* Verify button */}
                 <button
                   onClick={() => verifyForm(form.id)}
                   disabled={verifyingId === form.id}
-                  className={`w-full py-2 rounded-lg transition text-white font-medium disabled:opacity-50 ${
-                    isDsigner
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all duration-150 flex items-center justify-center gap-2"
                 >
-                  {verifyingId === form.id
-                    ? "Verifying..."
-                    : `Verify with ${isDsigner ? "DSigner" : "RC Vault"}`}
+                  {verifyingId === form.id ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Verify Form Data
+                    </>
+                  )}
                 </button>
 
-                {/* Verification result */}
+                {/* Result */}
                 {verificationResults[form.id] !== undefined && (
                   <div
-                    className={`p-2 text-center rounded font-semibold ${
+                    className={`flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold ${
                       verificationResults[form.id]
-                        ? "bg-green-50 text-green-800"
-                        : "bg-red-50 text-red-800"
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
                     }`}
                   >
-                    {verificationResults[form.id] ? "✓ VALID" : "✗ INVALID"}
+                    {verificationResults[form.id] ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Signature Valid
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Signature Invalid
+                      </>
+                    )}
                   </div>
                 )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>

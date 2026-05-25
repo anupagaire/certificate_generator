@@ -322,7 +322,7 @@ export default function FormSignPage() {
           <div className="grid grid-cols-2 gap-5">
             <button
               onClick={() => setSignProvider("rcvault")}
-              className="group border rounded-xl p-6 hover:border-blue-500 hover:shadow-md transition-all"
+              className="group border rounded-xl p-2 md:p-6 hover:border-blue-500 hover:shadow-md transition-all"
             >
               <p className="font-semibold text-gray-700 group-hover:text-blue-600">RC Vault</p>
               <p className="text-sm text-gray-500">Sign using RC Vault</p>
@@ -330,7 +330,7 @@ export default function FormSignPage() {
 
             <button
               onClick={() => setSignProvider("dsigner")}
-              className="group border rounded-xl p-6 hover:border-green-500 hover:shadow-md transition-all"
+              className="group border rounded-xl p-2 md:p-6 hover:border-green-500 hover:shadow-md transition-all"
             >
               <p className="font-semibold text-gray-700 group-hover:text-green-600">DSigner</p>
               <p className="text-sm text-gray-500">Sign using DSigner</p>

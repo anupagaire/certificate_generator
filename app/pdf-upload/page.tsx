@@ -209,7 +209,7 @@ const signedBlob = new Blob([new Uint8Array(signedBytes)], {
           <div className="grid grid-cols-2 gap-5">
             <button
               onClick={() => setSignProvider("rcvault")}
-              className="group border rounded-xl p-6 hover:border-blue-500 hover:shadow-md transition-all"
+              className="group border rounded-xl p-2 md:p-6 hover:border-blue-500 hover:shadow-md transition-all"
             >
               <p className="font-semibold text-gray-700 group-hover:text-blue-600">
                 RC Vault
@@ -219,7 +219,7 @@ const signedBlob = new Blob([new Uint8Array(signedBytes)], {
 
             <button
               onClick={() => setSignProvider("dsigner")}
-              className="group border rounded-xl p-6 hover:border-green-500 hover:shadow-md transition-all"
+              className="group border rounded-xl p-2 md:p-6 hover:border-green-500 hover:shadow-md transition-all"
             >
               <p className="font-semibold text-gray-700 group-hover:text-green-600">
                 DSigner

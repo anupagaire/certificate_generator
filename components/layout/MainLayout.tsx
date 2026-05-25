@@ -9,17 +9,23 @@ import { usePathname } from "next/navigation";
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
-  const isAdminRoute = pathname.startsWith("/status");
+  const hideLayout =
+    pathname === "/" || pathname.startsWith("/login");
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isAdminRoute && (
+
+      {/* NAVBAR */}
+      {!hideLayout && (
         <Navbar setSidebarOpen={setSidebarOpen} />
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        {!isAdminRoute && (
+
+        {/* SIDEBAR */}
+        {!hideLayout && (
           <SideBar
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
@@ -31,7 +37,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         </main>
       </div>
 
-      {!isAdminRoute && <Footer />}
+      {/* FOOTER */}
+      {!hideLayout && <Footer />}
     </div>
   );
 };

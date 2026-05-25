@@ -9,14 +9,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = async () => {
+ const handleLogin = async () => {
   setError("");
 
   try {
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", 
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
@@ -28,13 +28,8 @@ export default function Login() {
     }
 
     if (data.success) {
-      localStorage.setItem("user-name", data.name);
-  window.location.href = "/dashboard";
-      // small delay so cookie/session fully sets
-      setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 300);
+      localStorage.setItem("user-name", data.email);
+      window.location.href = "/dashboard";
     }
   } catch (err) {
     console.error(err);
