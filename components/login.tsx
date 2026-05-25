@@ -10,34 +10,37 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    setError("");
+  setError("");
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", 
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        setError(errData.error || "Login failed");
-        return;
-      }
+    const data = await res.json();
 
-      const data = await res.json();
-
-      if (data.success) {
-        localStorage.setItem("user-name", data.name);
-        router.push("/dashboard");
-      } else {
-        setError(data.error || "Login failed");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Server error");
+    if (!res.ok) {
+      setError(data.error || "Login failed");
+      return;
     }
-  };
+
+    if (data.success) {
+      localStorage.setItem("user-name", data.name);
+  window.location.href = "/dashboard";
+      // small delay so cookie/session fully sets
+      setTimeout(() => {
+        router.push("/dashboard");
+        router.refresh();
+      }, 300);
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Server error");
+  }
+};
 
   return (
     <div

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { X } from "lucide-react";
 
 const cards = [
   { title: "Form Sign", href: "/form-sign" },
@@ -14,52 +13,43 @@ const cards = [
   { title: "Signed PDF List", href: "/signed-pdfs" },
 ];
 
-export default function SideBar() {
+interface SidebarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: (value: boolean) => void;
+}
+
+export default function SideBar({
+  sidebarOpen,
+  setSidebarOpen,
+}: SidebarProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   return (
     <>
-{/* <div className="md:hidden flex items-center justify-between px-4 py-3 bg-stone-100 border-b shadow-sm sticky top-0 z-50 w-full">
-        <h2 className="text-lg font-bold text-gray-800">
-          Dashboard
-        </h2> */}
-{/* 
-        <button
-          onClick={() => setOpen(!open)}
-          className="p-2 rounded-lg hover:bg-stone-200"
-        >
-          {open ? (
-            <X className="w-6 h-6 text-gray-800" />
-          ) : (
-            <Menu className="w-6 h-6 text-gray-800" />
-          )}
-        </button> */}
-      {/* </div> */}
-
       {/* OVERLAY */}
-      {open && (
+      {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setOpen(false)}
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
+      {/* SIDEBAR */}
       <aside
-  className={`
-    fixed md:static top-0 left-0 z-50
-    h-screen w-[220px] md:w-64
-    bg-stone-100 shadow-xl md:shadow-lg
-    p-4 flex flex-col
-    transform transition-transform duration-300
+        className={`
+          fixed md:static top-0 left-0 z-50
+          h-screen w-[220px] md:w-64
+          bg-stone-100 shadow-xl md:shadow-lg
+          p-4 flex flex-col
+          transform transition-transform duration-300 ease-in-out
 
-    ${
-      open
-        ? "translate-x-0"
-        : "-translate-x-full md:translate-x-0"
-    }
-  `}
->
+          ${
+            sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }
+        `}
+      >
         {/* MOBILE HEADER */}
         <div className="flex items-center justify-between md:hidden mb-6">
           <h2 className="text-xl font-bold text-gray-800">
@@ -67,14 +57,14 @@ export default function SideBar() {
           </h2>
 
           <button
-            onClick={() => setOpen(false)}
+            onClick={() => setSidebarOpen(false)}
             className="p-2 rounded-lg hover:bg-stone-200"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* NAVIGATION */}
+        {/* LINKS */}
         <nav className="flex flex-col gap-3 overflow-y-auto">
           {cards.map((card) => {
             const isActive = pathname === card.href;
@@ -83,16 +73,16 @@ export default function SideBar() {
               <Link
                 key={card.title}
                 href={card.href}
-                onClick={() => setOpen(false)}
+                onClick={() => setSidebarOpen(false)}
                 className={`
                   block rounded-xl px-4 py-3
-                  text-sm sm:text-base font-medium
-                  transition-all duration-200
+                  text-sm font-medium
+                  transition-all
 
                   ${
                     isActive
                       ? "bg-amber-300 text-gray-900 shadow-md"
-                      : "text-gray-800 hover:bg-stone-300 hover:shadow"
+                      : "text-gray-800 hover:bg-stone-300"
                   }
                 `}
               >
